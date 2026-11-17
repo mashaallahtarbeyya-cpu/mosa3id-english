@@ -1,44 +1,179 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>My Auto Assistant - Priority Organizer</title>
+<title>MyAutoAssistant - Clear Your Mind</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800;900&display=swap" rel="stylesheet">
 <style>
-  body{font-family:'Inter',sans-serif;background:#f1f5f9}
-  @media(min-width:1024px){ .sticky-form{position:sticky;top:16px;max-height:calc(100vh - 32px);overflow-y:auto} .tasks-scroll{max-height:calc(100vh - 32px);overflow-y:auto;padding-left:4px} }
-  #toast{transition:all .3s}
-  @media print{ .no-print{display:none!important} body{background:white!important} .tasks-scroll{max-height:none!important;overflow:visible!important} .sticky-form{display:none!important} #printArea{box-shadow:none!important;border:none!important} .task-card{break-inside:avoid;border:1px solid #ddd!important} }
+body{font-family:Arial,sans-serif;background:#f1f5f9}
+.sug{cursor:pointer}
+.sug:hover{background:#ecfdf5}
 </style>
 </head>
-<body class="text-slate-800">
-<div id="toast" class="no-print fixed top-3 left-1/2 -translate-x-1/2 z-50 bg-emerald-700 text-white font-bold px-5 py-2.5 rounded-full shadow-xl opacity-0 pointer-events-none">✅ Saved, here it is</div>
-<header class="no-print bg-gradient-to-r from-teal-900 via-emerald-800 to-teal-900 text-white py-5 text-center shadow-md">
-  <h1 class="text-2xl md:text-3xl font-extrabold">📖 My Auto Assistant - Priority Organizer</h1>
-  <p class="text-sm text-emerald-100 mt-1">Clear your mind, organize your worries, and relax - No Ads</p>
+<body>
+<header class="bg-teal-900 text-white py-6 text-center">
+<h1 class="text-2xl font-extrabold">📖 MyAutoAssistant</h1>
+<p class="text-sm text-emerald-100">Type your worry, choose details, save it and clear your mind</p>
 </header>
-<div class="no-print max-w-6xl mx-auto px-4 mt-4">
-  <div class="bg-white rounded-2xl shadow border p-3 flex flex-wrap gap-2 items-center justify-between">
-    <div class="flex gap-2">
-      <button onclick="filterTasks('all')" class="filter-btn bg-emerald-700 text-white text-sm font-bold px-4 py-2 rounded-full">All <span id="cAll"></span></button>
-      <button onclick="filterTasks('pending')" class="filter-btn bg-white border text-sm font-bold px-4 py-2 rounded-full">⏳ Pending <span id="cPend"></span></button>
-      <button onclick="filterTasks('done')" class="filter-btn bg-white border text-sm font-bold px-4 py-2 rounded-full">✅ Done <span id="cDone"></span></button>
-    </div>
-    <div class="flex gap-2">
-      <input id="searchBox" oninput="render()" placeholder="🔍 Search a worry..." class="border rounded-full px-4 py-2 text-sm w-48 outline-none focus:ring-2 focus:ring-emerald-600">
-      <button onclick="window.print()" class="bg-[#1e4e68] text-white text-sm font-bold px-4 py-2 rounded-xl">🖨️ Print / PDF 📖</button>
-    </div>
-  </div>
+
+<main class="max-w-4xl mx-auto p-4">
+<!-- ADD -->
+<div class="bg-white rounded-2xl shadow-lg p-6 border mb-6">
+<h2 class="text-xl font-extrabold text-emerald-900 mb-4">➕ Add a New Worry</h2>
+
+<!-- 1 SEARCH -->
+<label class="block text-sm font-bold mb-1">1 - Search Your Worry (English) 🔍</label>
+<input type="text" id="worrySearch" oninput="onSearch()" onfocus="showAll()" placeholder="Type here... e.g. Money, Health, Work, Family..." autocomplete="off"
+class="w-full border-2 border-emerald-600 rounded-xl px-4 py-3 outline-none" />
+<div id="suggestions" class="border rounded-xl mt-1 bg-white shadow hidden max-h-60 overflow-y-auto"></div>
+<p class="text-xs text-slate-500 mt-1">Start typing, suggestions will appear. Example: Money, Health, Family, Work, Love, Study, Future...</p>
+
+<!-- 2 DROPDOWN DETAILS -->
+<label class="block text-sm font-bold mb-1 mt-4">2 - Select Details of This Worry (English) ▼</label>
+<select id="detailSelect" class="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none bg-white">
+<option value="">-- First choose a worry above --</option>
+</select>
+<input type="text" id="customDetail" placeholder="✍️ Or write your own detail in English here..." class="hidden mt-2 w-full border-2 border-amber-400 bg-amber-50 rounded-xl px-4 py-3 outline-none" />
+
+<!-- 3 NOTES -->
+<label class="block text-sm font-bold mb-1 mt-4">3 - More Notes (English)</label>
+<textarea id="notes" rows="3" placeholder="Write what is in your mind... e.g. I need to pay rent before Friday..." class="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none"></textarea>
+
+<div class="mt-4 flex gap-3">
+<button onclick="addTask()" class="flex-1 bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-3 rounded-xl">💾 SAVE WORRY</button>
+<button onclick="clearInputs()" class="bg-slate-200 font-bold px-5 py-3 rounded-xl">Clear</button>
 </div>
-<main class="max-w-6xl mx-auto p-4 grid lg:grid-cols-[380px_1fr] gap-5 items-start">
-  <div class="sticky-form no-print bg-white rounded-2xl shadow-lg p-5 border border-slate-200">
-    <h2 class="text-lg font-extrabold text-emerald-900 mb-3">➕ Add a New Worry</h2>
-    <label class="block text-sm font-bold mb-1">1 - Type of Worry</label>
-    <select id="type1" onchange="onType1Change()" class="w-full border rounded-xl px-3 py-2.5 mb-2 outline-none focus:ring-2 focus:ring-emerald-600">
-      <option value="Financial">💰 Financial</option><option value="Mental - Clutter">🧠 Mental - Clutter</option><option value="Professional - Teaching">🎓 Professional - Teaching</option><option value="Family">🏠 Family</option><option value="Health">🩺 Health</option><option value="Social">🤝 Social</option><option value="Spiritual - Religious">🕌 Spiritual - Religious</option><option value="__custom__">✍️ Other - Write it yourself</option>
-    </select>
-    <input id="customType1" placeholder="✍️ Write the new type here..." class="hidden mb-2 w-full border-2 border-amber-400 bg-amber-50 rounded-xl px-3 py-2.5 outline-none">
-    <label class="block text-sm font-bold mb-1">2 - Specify the Worry</label>
-    <select id="type2" onchange="onType2Change()" class="w-full border rounded-xl px-3 py-2.5 mb-2 outline
+<p id="saveMsg" class="hidden text-center font-bold text-emerald-700 mt-2">✅ Saved Successfully!</p>
+</div>
+
+<!-- FILTER -->
+<div class="flex flex-wrap gap-2 justify-between bg-white rounded-2xl p-4 shadow border mb-6">
+<div class="flex gap-2">
+<button onclick="filterTasks('all')" class="bg-emerald-700 text-white text-sm font-bold px-4 py-2 rounded-full">All</button>
+<button onclick="filterTasks('done')" class="bg-white border text-sm font-bold px-4 py-2 rounded-full">✅ Done</button>
+<button onclick="filterTasks('pending')" class="bg-white border text-sm font-bold px-4 py-2 rounded-full">⏳ Pending</button>
+</div>
+<div class="flex gap-2">
+<button onclick="window.print()" class="bg-slate-800 text-white text-sm font-bold px-4 py-2 rounded-xl">🖨️ Print / PDF</button>
+<button onclick="deleteAll()" class="bg-rose-100 text-rose-700 text-sm font-bold px-4 py-2 rounded-xl">🗑️ Delete All</button>
+</div>
+</div>
+
+<!-- LIST -->
+<div class="bg-white rounded-2xl shadow-lg p-6 border">
+<div class="flex justify-between"><h3 class="font-extrabold text-emerald-900">📋 My Worries List</h3><span id="countLabel" class="text-xs bg-emerald-100 px-3 py-1 rounded-full font-bold"></span></div>
+<div id="tasksList" class="space-y-4 mt-4"></div>
+<div id="emptyMsg" class="text-center py-10 text-slate-400"><div class="text-5xl mb-3">🌿</div><p class="font-bold">Your mind is clear now</p><p class="text-sm">Type a worry above and save it</p></div>
+</div>
+</main>
+
+<script>
+// ===== GLOBAL ENGLISH WORRIES DATABASE =====
+const DATA = {
+"Money": ["Paying Rent","Paying Bills","Paying Debt","Saving Money","Daily Expenses","Buying Food","Car Expenses","Unexpected Expense","Low Salary","No Job"],
+"Health": ["Headache","Back Pain","Feeling Tired","Doctor Appointment","Taking Medicine","Need Exercise","Sleep Problems","Anxiety","Stress","Dental Pain"],
+"Family": ["My Children","My Wife / Husband","My Parents","Family Visit","Family Problem","Children School","Children Health","Family Event","Taking Care of Parents"],
+"Work": ["Preparing Lesson","Correcting Exams","Meeting With Boss","Work Deadline","Work Stress","New Project","Talk With Colleague","Work Documents","Promotion"],
+"Study": ["Homework","Exam Preparation","Learning English","University Application","Reading Books","Online Course","Presentation"],
+"Love & Marriage": ["Finding Partner","Marriage Problems","Misunderstanding","Need Communication","Planning Wedding","Jealousy","Feeling Lonely"],
+"Home": ["Cleaning House","Kitchen","Buying Furniture","Fixing Something","Moving House","Garden","Shopping for Home"],
+"Friends & Social": ["Calling a Friend","Visiting a Friend","Social Event","Misunderstanding With Friend","Feeling Isolated","Helping a Friend"],
+"Spiritual / Religion": ["Prayer","Reading Quran / Bible","Dua / Prayer Request","Charity","Fasting","Feeling Far From God","Forgiveness"],
+"Future": ["Fear of Future","Career Choice","Moving Abroad","Buying a House","Starting Business","Retirement","Uncertainty"],
+"Car & Travel": ["Car Repair","Car Papers","Driving License","Booking Travel","Passport","Flight Ticket","Hotel Booking"],
+"Technology": ["Phone Problem","Computer Problem","Internet Problem","Forgot Password","App Not Working","Backup Photos"],
+"Other": ["Write My Own Worry..."]
+};
+let ALL_WORRIES = Object.keys(DATA);
+// add more global worries
+ALL_WORRIES = [...ALL_WORRIES, "Bills","Debt","Rent","Job Loss","Unemployment","Inflation","Taxes","Insurance","School Fees","Medical Bills","Mental Health","Depression","Overthinking","Procrastination","Time Management","Self Confidence","Motivation","Habits","Diet","Weight Loss","Parenting","Divorce","Grief","Death","Old Age","Safety","Politics","News","Climate","Shopping","Cooking","Cleaning","Laundry","Pets","Neighbours"];
+
+let tasks = [];
+try{ tasks = JSON.parse(localStorage.getItem('myauto_tasks_v2')||'[]'); }catch(e){ tasks=[]; }
+let currentFilter='all';
+let selectedWorry='';
+
+function showAll(){
+  let box=document.getElementById('suggestions');
+  renderSuggestions('');
+  box.classList.remove('hidden');
+}
+function onSearch(){
+  let v=document.getElementById('worrySearch').value.trim();
+  renderSuggestions(v);
+  document.getElementById('suggestions').classList.remove('hidden');
+  // if user typed a worry not in list, still allow it
+  if(v.length>1){ selectedWorry=v; updateDetails(v); }
+}
+function renderSuggestions(q){
+  let box=document.getElementById('suggestions');
+  let list = ALL_WORRIES.filter(w=> w.toLowerCase().includes(q.toLowerCase())).slice(0,30);
+  if(list.length===0) list=[q];
+  box.innerHTML = list.map(w=>`<div class="sug px-4 py-2 border-b text-sm font-bold" onclick="pickWorry('${w.replace(/'/g,"")}')">${w}</div>`).join('');
+}
+function pickWorry(w){
+  document.getElementById('worrySearch').value=w;
+  selectedWorry=w;
+  document.getElementById('suggestions').classList.add('hidden');
+  updateDetails(w);
+}
+function updateDetails(worry){
+  let sel=document.getElementById('detailSelect');
+  let details = DATA[worry] || ["General Problem","Need to Solve","Need to Plan","Need to Talk","Need Money","Need Time","Urgent","Not Urgent","Write My Own Detail..."];
+  sel.innerHTML='<option value="">-- Choose Detail --</option>' + details.map(d=>`<option value="${d}">${d}</option>`).join('') + '<option value="__custom__">✍️ Write My Own Detail...</option>';
+  sel.onchange=function(){
+    let c=document.getElementById('customDetail');
+    if(sel.value==='__custom__') c.classList.remove('hidden'); else c.classList.add('hidden');
+  };
+}
+function save(){
+  try{ localStorage.setItem('myauto_tasks_v2', JSON.stringify(tasks)); }catch(e){}
+  render();
+}
+function addTask(){
+  let worry=document.getElementById('worrySearch').value.trim();
+  if(!worry){ alert('Please type or choose a worry first 🔍'); return; }
+  let detail=document.getElementById('detailSelect').value;
+  if(detail==='__custom__'){ detail=document.getElementById('customDetail').value.trim(); if(!detail){ alert('Please write your detail in English'); return; } }
+  if(!detail){ alert('Please choose a detail from the dropdown ▼'); return; }
+  let notes=document.getElementById('notes').value.trim();
+  tasks.unshift({id:Date.now(), worry, detail, notes, done:false, date:new Date().toLocaleDateString('en-GB')});
+  save();
+  // show saved message
+  let m=document.getElementById('saveMsg'); m.classList.remove('hidden');
+  setTimeout(()=>m.classList.add('hidden'),2000);
+  clearInputs();
+  alert('✅ Saved: '+worry+' - '+detail);
+}
+function clearInputs(){
+  document.getElementById('worrySearch').value='';
+  document.getElementById('detailSelect').innerHTML='<option value="">-- First choose a worry above --</option>';
+  document.getElementById('customDetail').value=''; document.getElementById('customDetail').classList.add('hidden');
+  document.getElementById('notes').value='';
+  document.getElementById('suggestions').classList.add('hidden');
+}
+function toggleDone(id){ tasks=tasks.map(t=>t.id===id?{...t,done:!t.done}:t); save(); }
+function deleteTask(id){ if(!confirm('Delete this worry?')) return; tasks=tasks.filter(t=>t.id!==id); save(); }
+function deleteAll(){ if(!confirm('Delete all?')) return; tasks=[]; save(); }
+function filterTasks(f){ currentFilter=f; render(); }
+function render(){
+  let list=document.getElementById('tasksList');
+  let empty=document.getElementById('emptyMsg');
+  let filtered=tasks.filter(t=> currentFilter==='all'?true: currentFilter==='done'?t.done:!t.done);
+  document.getElementById('countLabel').textContent=`Total: ${tasks.length} | Done: ${tasks.filter(t=>t.done).length} | Pending: ${tasks.filter(t=>!t.done).length}`;
+  if(filtered.length===0){ list.innerHTML=''; empty.style.display='block'; return; }
+  empty.style.display='none';
+  list.innerHTML=filtered.map(t=>`
+  <div class="border rounded-xl p-4 ${t.done?'bg-emerald-50':'bg-white'}">
+  <div class="flex justify-between"><div><span class="text-xs font-bold bg-teal-900 text-white px-2 py-1 rounded-full">${t.worry}</span> <span class="text-xs font-bold bg-amber-100 px-2 py-1 rounded-full">${t.detail}</span> <span class="text-xs text-slate-400">${t.date}</span></div><span class="text-sm font-bold ${t.done?'text-emerald-700':'text-amber-600'}">${t.done?'✅ Done':'⏳ Pending'}</span></div>
+  <p class="mt-2">${t.notes||'(No notes)'}</p>
+  <div class="mt-3 flex gap-2"><button onclick="toggleDone(${t.id})" class="text-sm font-bold px-4 py-2 rounded-lg ${t.done?'bg-amber-500 text-white':'bg-emerald-600 text-white'}">${t.done?'↩️ Undo':'✅ Mark Done'}</button><button onclick="deleteTask(${t.id})" class="text-sm font-bold px-4 py-2 rounded-lg bg-rose-100 text-rose-700">🗑️ Delete</button></div>
+  </div>`).join('');
+}
+// close suggestions when clicking outside
+document.addEventListener('click',e=>{ if(!e.target.closest('#worrySearch') && !e.target.closest('#suggestions')) document.getElementById('suggestions').classList.add('hidden'); });
+render();
+</script>
+</body>
+</html>
