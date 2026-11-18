@@ -1,6 +1,7 @@
 {
   "name": "My Auto Assistant",
   "short_name": "MyAutoAssistant",
+  "description": "An app to organize and clear your mind",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#f1f5f9",
