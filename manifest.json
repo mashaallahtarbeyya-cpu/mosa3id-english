@@ -1,11 +1,11 @@
 {
   "name": "My Auto Assistant",
-  "short_name": "MyAutoAssistant",
-  "description": "An app to organize and clear your mind",
+  "short_name": "AutoAssistant",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#f1f5f9",
   "theme_color": "#134e4a",
+  "description": "Type your worry, choose details, save it and clear your mind",
   "icons": [
     {
       "src": "icon.png",
